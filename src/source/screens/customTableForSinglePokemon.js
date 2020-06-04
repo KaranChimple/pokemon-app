@@ -29,7 +29,7 @@ const StyledTableRow = withStyles((theme) => ({
 
 const useStyles = makeStyles({
   table: {
-    width: 700,
+    width: 1000,
     marginLeft: '5%'
   },
 });
@@ -52,9 +52,11 @@ const getAttributeValue = (attributeSubType, value) => {
   }
 }
 
-const CustomizedTables = ({ data }) => {
+const CustomizedTables = ({ data = null, data2 = null, isComparisionTable }) => {
   const classes = useStyles();
-  if (isEmpty(data)) return null;
+  if (!isComparisionTable && isEmpty(data)) return null;
+  if(isComparisionTable) 
+    if(isEmpty(data2) || isEmpty(data)) return null;
   return (
     <TableContainer component={Paper}>
       <Table className={classes.table} aria-label="customized table">
@@ -62,6 +64,7 @@ const CustomizedTables = ({ data }) => {
           <TableRow>
             <StyledTableCell align="left">Attributes Name</StyledTableCell>
             <StyledTableCell align="left">{startCase(data.name)}&nbsp;</StyledTableCell>
+            {!isEmpty(data2) && <StyledTableCell align="left">{startCase(data2.name)}&nbsp;</StyledTableCell>}
           </TableRow>
         </TableHead>
         <TableBody>
@@ -73,6 +76,9 @@ const CustomizedTables = ({ data }) => {
             <StyledTableCell align="left">
               {getAttributeValue(attributeSubTypes[index], data[attribute])}
             </StyledTableCell>
+            {!isEmpty(data2) && <StyledTableCell align="left">
+              {getAttributeValue(attributeSubTypes[index], data2[attribute])}
+            </StyledTableCell>}
 
           </StyledTableRow>)
           )}

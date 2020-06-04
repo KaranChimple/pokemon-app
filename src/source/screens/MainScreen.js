@@ -26,20 +26,16 @@ class MainScreen extends PureComponent {
     getData({ nextUrl: null });
   }
 
-  componentDidUpdate(prevProps) {
-    const { pokemonDetails } = this.props;
-    if (JSON.stringify(pokemonDetails) !== JSON.stringify(prevProps.pokemonDetails)) {
-      this.setState({
-        selectedPokemon1: pokemonDetails,
-      });
-    }
-  }
-
   togglePokemonDetails = () => {
-    const { pokemonDetailsSelected } = this.state;
+    const { pokemonDetailsSelected, comparePokemonSelected } = this.state;
     this.setState({
       pokemonDetailsSelected: !pokemonDetailsSelected,
-    })
+    });
+    if (comparePokemonSelected) {
+      this.setState({
+        comparePokemon: false,
+      })
+    }
     if (!pokemonDetailsSelected)
       navigation.push('View Pokémon Details')
     else
@@ -49,8 +45,13 @@ class MainScreen extends PureComponent {
   toggleComparePokemonDetails = () => {
     const { comparePokemonSelected } = this.state;
     this.setState({
-      comparePokemonSelected: !comparePokemonSelected,
+      pokemonDetailsSelected: true,
+      comparePokemonSelected: true,
     })
+    if (!comparePokemonSelected)
+      navigation.push('Compare Pokémon')
+    else
+      navigation.pop();
   }
 
   _loadNextPage = () => {
@@ -61,6 +62,8 @@ class MainScreen extends PureComponent {
 
   _pokemonSelected = (item) => {
     const { getPokemonDetails } = this.props;
+    const { selectedPokemon2 } = this.props;
+    const { comparePokemonSelected } = this.state;
     if (!isEmpty(item)) {
       this.setState({
         selectedPokemon1: item,
@@ -70,21 +73,46 @@ class MainScreen extends PureComponent {
       this.setState({
         selectedPokemon1: null,
       }, () => {
+        getPokemonDetails(null);
         this.togglePokemonDetails();
-      })
+        if (isEmpty(selectedPokemon2) && comparePokemonSelected) {
+          this.setState({
+            comparePokemonSelected: false,
+          });
+        }
+      });
+    }
+  }
+
+  _pokemonToBeCompared = (item) => {
+    const { comparePokemon } = this.props;
+    const { selectedPokemon1 } = this.state;
+    if (!isEmpty(item)) {
+      this.setState({
+        selectedPokemon2: item,
+      });
+      if (!isEmpty(selectedPokemon1))
+        comparePokemon({ pokemon2: item })
+    } else {
+      this.setState({
+        selectedPokemon2: null,
+        comparePokemonSelected: false,
+      }, () => {
+        comparePokemon({ pokemon2: {} })
+      });
+      navigation.pop();
     }
   }
 
   render() {
     const {
-      selectedPokemon1,
-      selectedPokemon2,
       pokemonDetailsSelected,
       comparePokemonSelected
     } = this.state;
     const {
       pokemonList,
-      pokemonDetails
+      pokemonDetails,
+      pokemon2Data,
     } = this.props;
     return (
       <div className={styles.root}>
@@ -110,12 +138,24 @@ class MainScreen extends PureComponent {
               </div>}
             </div>
             <div style={styles.buttonContainer}>
-              {!comparePokemonSelected && <Button variant="contained">Compare Pokémon</Button>}
+              {!comparePokemonSelected && <Button variant="contained" onClick={this.toggleComparePokemonDetails}>Compare Pokémon</Button>}
+              {comparePokemonSelected && !isEmpty(pokemonList.data.results) && <div style={styles.rowAlignedDiv}>
+                <InfiniteAutocomplete
+                  hasNextPage={!isEmpty(pokemonList.data.next)}
+                  isNextPageLoading={pokemonList.data.isLoading}
+                  items={pokemonList.data.results}
+                  onDataSelected={this._pokemonToBeCompared}
+                  loadNextPage={this._loadNextPage}
+                />
+              </div>}
             </div>
           </div>
         </div>
-        {!isEmpty(selectedPokemon1) && !isEmpty(selectedPokemon1.data) && <div style={styles.tableContainer}>
-          <CustomizedTables data={selectedPokemon1.data} />
+        {!isEmpty(pokemonDetails) && !isEmpty(pokemonDetails.data) && !comparePokemonSelected && pokemonDetailsSelected && <div style={styles.tableContainer}>
+          <CustomizedTables data={pokemonDetails.data} />
+        </div>}
+        {!isEmpty(pokemonDetails) && !isEmpty(pokemonDetails.data) && !isEmpty(pokemon2Data) && !isEmpty(pokemon2Data.data) && comparePokemonSelected && <div style={styles.tableContainer}>
+          <CustomizedTables data={pokemonDetails.data} data2={pokemon2Data.data} isComparisionTable />
         </div>}
       </div >
     )
@@ -177,6 +217,7 @@ const mapStateToProps = (state) => {
   return {
     pokemonList: state.pokemonList,
     pokemonDetails: state.pokemonDetails,
+    pokemon2Data: state.comparePokemons,
   }
 }
 

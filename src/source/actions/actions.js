@@ -39,13 +39,10 @@ const comparePokemonLoading = () => {
     };
 }
 
-const comparePokemonSuccess = ({ pokeData1, pokeData2 }) => {
+const comparePokemonSuccess = (data) => {
     return {
         type: COMPARE_POKEMON_SUCCESS,
-        payload: {
-            pokeData1,
-            pokeData2
-        },
+        payload: data,
     };
 };
 
@@ -87,16 +84,14 @@ export const getData = ({ nextUrl = null }) => async dispatch => {
     }
 }
 
-export const comparePokemon = ({ pokemon1 = null, pokemon2 = null }) => async dispatch => {
+export const comparePokemon = ({ pokemon2 = null }) => async dispatch => {
     dispatch(comparePokemonLoading());
     try {
-        if (!isEmpty(pokemon1) && !isEmpty(pokemon2)) {
-            const resp1 = await axios.get(pokemon1.url);
+        if (!isEmpty(pokemon2)) {
             const resp2 = await axios.get(pokemon2.url);
-            dispatch(comparePokemonSuccess({
-                pokeData1: resp1.data,
-                pokeData2: resp2.data
-            }));
+            dispatch(comparePokemonSuccess(resp2.data));
+        } else {
+            dispatch(comparePokemonSuccess({}));
         }
     } catch (error) {
         dispatch(comparePokemonFailed(error));
@@ -106,8 +101,12 @@ export const comparePokemon = ({ pokemon1 = null, pokemon2 = null }) => async di
 export const getPokemonDetails = (url) => async dispatch => {
     dispatch(getPokemonDetailsLoading());
     try {
-        const resp = await axios.get(url);
-        dispatch(getPokemonDetailsSuccess(resp.data));
+        if (!isEmpty(url)) {
+            const resp = await axios.get(url);
+            dispatch(getPokemonDetailsSuccess(resp.data));
+        } else {
+            dispatch(getPokemonDetailsSuccess({}));
+        }
     } catch (error) {
         dispatch(getPokemonDetailsFailed(error));
     }
