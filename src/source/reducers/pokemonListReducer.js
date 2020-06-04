@@ -10,7 +10,14 @@ export default function pokemonListReducer(state = initialState.pokemonList, act
     case GET_DATA_LOADING:
       return { ...state, isLoading: true };
     case GET_DATA_SUCCESS:
-      return { ...state, isLoading: false, data: [...state.data, ...action.payload] };
+      return {
+        ...state,
+        isLoading: false,
+        data: {
+          ...action.payload,
+          results: [...state.data.results, ...action.payload.results],
+        }
+      };
     case GET_DATA_FAILED:
       return { ...state, error: action.error, isLoading: false };
     default:

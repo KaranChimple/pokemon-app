@@ -2,7 +2,9 @@ export default {
     users: [],
     pokemonList: {
         isLoading: false,
-        data: [],
+        data: {
+            results: [],
+        },
         error: null,
     },
     pokemonDetails: {

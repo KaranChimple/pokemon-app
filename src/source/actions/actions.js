@@ -81,7 +81,7 @@ export const getData = ({ nextUrl = null }) => async dispatch => {
     try {
         const urlToBeSent = isEmpty(nextUrl) ? baseUrl : nextUrl;
         const resp = await axios.get(urlToBeSent);
-        dispatch(getDataSuccess(resp.body))
+        dispatch(getDataSuccess(resp.data))
     } catch (error) {
         dispatch(getDataFailed(error));
     }
@@ -94,8 +94,8 @@ export const comparePokemon = ({ pokemon1 = null, pokemon2 = null }) => async di
             const resp1 = await axios.get(pokemon1.url);
             const resp2 = await axios.get(pokemon2.url);
             dispatch(comparePokemonSuccess({
-                pokeData1: resp1.body,
-                pokeData2: resp2.body
+                pokeData1: resp1.data,
+                pokeData2: resp2.data
             }));
         }
     } catch (error) {
@@ -107,7 +107,7 @@ export const getPokemonDetails = (url) => async dispatch => {
     dispatch(getPokemonDetailsLoading());
     try {
         const resp = await axios.get(url);
-        dispatch(getPokemonDetailsSuccess(resp.body));
+        dispatch(getPokemonDetailsSuccess(resp.data));
     } catch (error) {
         dispatch(getPokemonDetailsFailed(error));
     }
